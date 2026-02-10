@@ -40,3 +40,9 @@ def metrics():
         "trust": trust,
         "last_failure_time": last_failure_time
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    import sys
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8001
+    uvicorn.run(app, host="127.0.0.1", port=port)

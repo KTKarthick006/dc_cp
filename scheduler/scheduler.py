@@ -42,11 +42,15 @@ def submit_task(task: Task):
     candidates = []
 
     for node, url in WORKERS.items():
-        metrics = requests.get(f"{url}/metrics").json()
-        risk = compute_risk(metrics) + cognitive_penalty(metrics)
+        try:
+            metrics = requests.get(f"{url}/metrics", timeout=2).json()
+            risk = compute_risk(metrics) + cognitive_penalty(metrics)
 
-        if risk < risk_threshold:
-            candidates.append((node, url, risk))
+            if risk < risk_threshold:
+                candidates.append((node, url, risk))
+        except:
+            # Skip unavailable workers
+            continue
 
     if not candidates:
         risk_threshold = min(0.9, risk_threshold + 0.05)
@@ -69,3 +73,7 @@ def submit_task(task: Task):
         "result": result["status"],
         "risk_threshold": round(risk_threshold, 3)
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=9000)
